@@ -5,7 +5,35 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    groups:
+      # Un solo PR para el goteo de parches de desarrollo, en vez de uno
+      # por paquete: es lo que hacía que se acumulasen PRs sin revisar.
+      dev-minor-patch:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Vite 7 retiró el subpath "vite/internal" que importa
+      # @vitejs/plugin-react 6, así que el par 6+7 no arranca: falla la
+      # carga de vite.config.js con ERR_PACKAGE_PATH_NOT_EXPORTED. Se
+      # mantiene la combinación 4.x + 6.x hasta que el plugin publique
+      # una versión compatible; entonces se quitan estos dos ignore.
+      - dependency-name: "@vitejs/plugin-react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
+      # eslint-plugin-react-hooks 7 añade set-state-in-effect y react-hooks/refs,
+      # que marcan 5 errores en App.jsx. No son fallos de dependencias sino un
+      # refactor de la app: se aborda aparte, no en una subida de versión.
+      - dependency-name: "eslint-plugin-react-hooks"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
