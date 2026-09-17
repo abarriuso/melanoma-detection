@@ -19,7 +19,7 @@ describe('constants', () => {
     expect(GITHUB_USER).toBe('abarriuso');
   });
 
-  it('REPO_NAME defaults to melanoma-detection-vgg16', () => {
-    expect(REPO_NAME).toBe('melanoma-detection-vgg16');
+  it('REPO_NAME defaults to melanoma-detection', () => {
+    expect(REPO_NAME).toBe('melanoma-detection');
   });
 });
