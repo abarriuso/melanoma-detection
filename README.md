@@ -13,6 +13,12 @@ la inferencia en el navegador del usuario.
 
 **Demo en vivo:** https://abarriuso.github.io/melanoma-detection/
 
+## Capturas
+
+| Escritorio | Móvil |
+|:---:|:---:|
+| ![Demo de detección de melanoma en escritorio](docs/screenshots/melanoma-detection-desktop.png) | ![Demo de detección de melanoma en móvil](docs/screenshots/melanoma-detection-mobile.png) |
+
 > **Aviso.** Este es un proyecto académico y una prueba de concepto. **No es un
 > dispositivo médico, no está validado clínicamente y no debe usarse para tomar
 > decisiones de salud.** Sus resultados se obtienen sobre un único conjunto de
