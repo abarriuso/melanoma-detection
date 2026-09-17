@@ -7,7 +7,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 // eslint-disable-next-line no-undef
 const GITHUB_USER = process.env.VITE_GITHUB_USER ?? 'abarriuso';
 // eslint-disable-next-line no-undef
-const REPO_NAME = process.env.VITE_REPO_NAME ?? 'melanoma-detection-vgg16';
+const REPO_NAME = process.env.VITE_REPO_NAME ?? 'melanoma-detection';
 
 // CSP: en dev necesitamos 'unsafe-eval' para HMR; en prod no.
 function cspPlugin() {
@@ -100,7 +100,7 @@ export default defineConfig({
   ],
   // `base` prefija todas las rutas de assets con el nombre del repo.
   // Necesario porque GitHub Pages sirve en un subdirectorio:
-  //   https://abarriuso.github.io/melanoma-detection-vgg16/
+  //   https://abarriuso.github.io/melanoma-detection/
   // Sin esto, las rutas absolutas (/assets/...) apuntarían a la raíz
   // del dominio (github.io/) y no encontrarían los archivos.
   base: `/${REPO_NAME}/`,
