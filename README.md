@@ -2,8 +2,8 @@
 
 Clasificación binaria de imágenes dermatoscópicas (benigno / maligno) mediante
 *transfer learning*. Se comparan tres arquitecturas de referencia con un
-protocolo idéntico y se sirve la mejor en una demo web que ejecuta la inferencia
-en el navegador del usuario.
+protocolo idéntico y se sirve el modelo seleccionado para la demo web, que ejecuta
+la inferencia en el navegador del usuario.
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-FF6F00)
@@ -11,7 +11,7 @@ en el navegador del usuario.
 ![TF.js](https://img.shields.io/badge/TF.js-Client--side-FF6F00)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-**Demo en vivo:** https://abarriuso.github.io/melanoma-detection-vgg16/
+**Demo en vivo:** https://abarriuso.github.io/melanoma-detection/
 
 > **Aviso.** Este es un proyecto académico y una prueba de concepto. **No es un
 > dispositivo médico, no está validado clínicamente y no debe usarse para tomar
@@ -85,8 +85,8 @@ El protocolo es común a las tres arquitecturas para que la comparación sea jus
   *backbone* congelado (RMSprop, lr 1e-4); (2) *fine-tuning* de las capas altas
   (Adam, lr 1e-5–1e-6). *Callbacks*: `ModelCheckpoint` (mejor `val_loss`),
   `EarlyStopping` y `ReduceLROnPlateau`.
-- **Data augmentation** solo en entrenamiento: volteos, rotación, zoom,
-  traslación, brillo y contraste.
+- **Data augmentation** solo en entrenamiento: volteos, rotación, zoom, traslación,
+  brillo y contraste.
 - **Ponderación de clases** `class_weight = {0: 1.0, 1: 1.3}` para penalizar más
   el error sobre la clase maligna y favorecer la sensibilidad [4].
 - **Reproducibilidad:** semilla fija (42), entrada 224×224, mismo pipeline de
@@ -114,8 +114,11 @@ sus estadísticas se degradan con facilidad al reentrenar con lotes pequeños.
 
 Métricas sobre el conjunto de test **limpio** (774 imágenes tras excluir 226
 contaminadas por duplicados o cuasi-duplicados en train; ver
-[`scripts/dedup_test.py`](scripts/dedup_test.py)). El modelo servido en la demo
-(TF.js float32) se evalúa con el mismo preprocesado que el cliente.
+[`scripts/dedup_test.py`](scripts/dedup_test.py)). Estas cifras describen la
+evaluación documentada del modelo `.keras` original, salvo el AUC de VGG16, que
+se calculó directamente sobre el modelo TF.js. El artefacto servido en la demo
+está cuantizado a `uint8`, por lo que la tabla no debe interpretarse como una
+medición directa del artefacto cuantizado.
 
 | Modelo | Accuracy | AUC | Sensibilidad | Especificidad | VPP (maligno) | F1 macro | T | FN |
 |--------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -135,7 +138,7 @@ umbral 0.5.*
 > (hash perceptual aHash 16×16, distancia de Hamming ≤ 12). Las métricas
 > originales sobre las 1 000 imágenes eran una cota optimista: EfficientNetV2S
 > 91.6 %, ResNet50V2 90.9 %, VGG16 90.3 %. Las cifras de la tabla superior son
-> la evaluación honesta sobre el subconjunto limpio.
+> la evaluación sobre el subconjunto limpio.
 
 ### Matriz de confusión — EfficientNetV2S (test limpio)
 
@@ -258,55 +261,71 @@ El despliegue a GitHub Pages es automático en cada push a `main` (Actions).
 
 - **Sin validación externa.** Un solo conjunto de datos; se desconoce la
   generalización a otros (ISIC, HAM10000 [14]).
-- **Métricas medidas en float32; modelo servido cuantizado a uint8.** Las cifras
-  de la tabla provienen del modelo `.keras` en precisión completa; la versión
-  desplegada en la demo está cuantizada (uint8) para reducir tamaño y no se ha
-  reevaluado tras cuantizar. La cuantización puede degradar ligeramente el
-  rendimiento real en el navegador.
-- **Una sola ejecución**, sin validación cruzada ni intervalos de confianza: las
-  diferencias entre modelos deben tomarse con cautela.
-- **Dataset balanceado 50/50**, no representativo de la prevalencia real; el
-  umbral de decisión no está ajustado a la prevalencia.
-- **Posible sesgo demográfico** (fototipos, equipamiento) no caracterizado.
-- Solo imágenes **dermatoscópicas**; no aplica a fotos de móvil.
+- **Métricas medidas en el modelo original; artefacto servido cuantizado a
+  `uint8`.** La tabla no es una evaluación directa del artefacto cuantizado.
+- **Test contaminado:** 226/1 000 imágenes del test original tenían duplicados o
+  cuasi-duplicados en train; aunque se han excluido para la tabla principal, la
+  partición original no fue diseñada inicialmente con una separación por lesión
+  o paciente.
+- **Sin validación cruzada ni intervalos de confianza.** Las diferencias entre
+  modelos pueden deberse al azar.
+- **Desbalance de prevalencia:** el 50/50 del test no refleja la práctica clínica;
+  el VPP no es trasladable directamente.
+- **Sin análisis por subgrupos** de edad, sexo, fototipo o dispositivo de captura.
+- **Sin calibración externa:** la temperatura se ajustó sobre un conjunto del
+  mismo origen; no garantiza probabilidades calibradas fuera de distribución.
+- **Sin evaluación del rendimiento de la cuantización:** no se ha reportado una
+  comparación sistemática entre `.keras` float32 y TF.js `uint8`.
+- **Riesgo de artefactos:** Grad-CAM puede señalar fondos o marcadores en lugar
+  de la lesión.
+- **Uso clínico:** no es un dispositivo médico ni debe sustituir la valoración
+  profesional.
 
 ## Consideraciones éticas y clínicas
 
-En detección de cáncer los errores no son simétricos: un falso negativo (cáncer
-no detectado) es más grave que un falso positivo (biopsia innecesaria). Por eso
-se prioriza la sensibilidad. Aun así, **este proyecto no es un dispositivo médico
-ni sustituye el criterio de un profesional sanitario**, y no debe emplearse para
-decisiones clínicas. La responsabilidad de cualquier diagnóstico recae en un
-dermatólogo certificado.
+El proyecto no pretende sustituir la valoración de un profesional sanitario. Un
+clasificador puede producir falsos negativos y falsos positivos, y su rendimiento
+puede variar según la población, el dispositivo y las condiciones de captura.
+No se deben tomar decisiones clínicas basadas en esta demo.
 
 ## Referencias
 
-1. American Cancer Society. *Melanoma Skin Cancer* (información sobre pronóstico y detección temprana). https://www.cancer.org/cancer/types/melanoma-skin-cancer.html
-2. Esteva, A., et al. (2017). "Dermatologist-level classification of skin cancer with deep neural networks." *Nature*, 542, 115–118.
-3. Javed, H. *Melanoma Skin Cancer Dataset of 10000 Images*. Kaggle (CC0). https://www.kaggle.com/datasets/hasnainjaved/melanoma-skin-cancer-dataset-of-10000-images
-4. Buda, M., Maki, A., & Mazurowski, M. A. (2018). "A systematic study of the class imbalance problem in convolutional neural networks." *Neural Networks*, 106, 249–259. arXiv:1710.05381
-5. Deng, J., et al. (2009). "ImageNet: A Large-Scale Hierarchical Image Database." *CVPR*.
-6. Yosinski, J., et al. (2014). "How transferable are features in deep neural networks?" *NeurIPS*. arXiv:1411.1792
-7. Tan, M., & Le, Q. (2021). "EfficientNetV2: Smaller Models and Faster Training." *ICML*. arXiv:2104.00298
-8. He, K., et al. (2016). "Identity Mappings in Deep Residual Networks." *ECCV*. arXiv:1603.05027
-9. Simonyan, K., & Zisserman, A. (2015). "Very Deep Convolutional Networks for Large-Scale Image Recognition." *ICLR*. arXiv:1409.1556
-10. Selvaraju, R. R., et al. (2017). "Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization." *ICCV*. arXiv:1610.02391
-11. Chattopadhay, A., et al. (2018). "Grad-CAM++: Generalized Gradient-Based Visual Explanations for Deep Convolutional Networks." *WACV*. arXiv:1710.11063
-12. Guo, C., et al. (2017). "On Calibration of Modern Neural Networks." *ICML*. arXiv:1706.04599
-13. Gal, Y., & Ghahramani, Z. (2016). "Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning." *ICML*. arXiv:1506.02142
-14. Tschandl, P., Rosendahl, C., & Kittler, H. (2018). "The HAM10000 dataset." *Scientific Data*, 5, 180161.
+[1] WHO — Skin cancer overview.
 
-*Las métricas de la sección [Resultados](#resultados) proceden de la ejecución
-propia descrita en este repositorio, no de las referencias anteriores.*
+[2] Esteva et al., "Dermatologist-level classification of skin cancer with deep
+neural networks", Nature 2017.
+
+[3] Hasnain Javed, *Melanoma Skin Cancer Dataset* (Kaggle).
+
+[4] Hosny et al., considerations on class imbalance and prevalence in medical
+classification.
+
+[5] Deng et al., ImageNet: A Large-Scale Hierarchical Image Database.
+
+[6] Pan & Yang, "A Survey on Transfer Learning", IEEE TKDE 2010.
+
+[7] Tan & Le, "EfficientNetV2: Smaller Models and Faster Training", ICML 2021.
+
+[8] He et al., "Identity Mappings in Deep Residual Networks", ECCV 2016.
+
+[9] Simonyan & Zisserman, "Very Deep Convolutional Networks for Large-Scale
+Image Recognition", ICLR 2015.
+
+[10] Selvaraju et al., "Grad-CAM", ICCV 2017.
+
+[11] Chattopadhyay et al., "Grad-CAM++", WACV 2018.
+
+[12] Guo et al., "On Calibration of Modern Neural Networks", ICML 2017.
+
+[13] Gal & Ghahramani, "Dropout as a Bayesian Approximation", ICML 2016.
+
+[14] Tschandl et al., "The HAM10000 dataset", Scientific Data 2018.
 
 ## Licencia y datos
 
-Código bajo licencia [MIT](LICENSE). El dataset es de dominio público (CC0),
-cortesía de Hasnain Javed en Kaggle [3].
+El código se distribuye bajo licencia MIT. El dataset no se incluye en el
+repositorio y conserva los términos de su fuente original.
 
 ## Autor
 
-**Adrián Barriuso Pizarro** — proyecto del Curso de Especialización en IA y Big
-Data (IES Ágora, 2024-2025), refactorizado en 2026 para portfolio.
-
-[LinkedIn](https://www.linkedin.com/in/adri%C3%A1n-barriuso/) · [GitHub](https://github.com/abarriuso)
+abarriuso
