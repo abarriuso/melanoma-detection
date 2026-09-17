@@ -64,8 +64,8 @@ jobs:
         run: pnpm test
 
       # Vite genera el build de producción en demo/dist/.
-      # La variable `base` en vite.config.js se encarga de prefijar las rutas
-      # con /melanoma-detection-vgg16/ para que funcionen en GitHub Pages.
+      # La variable `base` en vite.config.js usa /melanoma-detection/
+      # para que los assets funcionen en GitHub Pages.
       - name: Build
         run: pnpm build
 
