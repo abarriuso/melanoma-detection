@@ -94,7 +94,7 @@ describe('getModel', () => {
     expect(m.name).toBe('VGG16');
     expect(m.path).toContain('model.json');
     expect(m.temperature).toBe(1.3359);
-    expect(m.auc).toBe(0.9712);
+    expect(m.auc).toBe(0.957);
   });
 
   it('returns ResNet50V2 for its id', () => {
