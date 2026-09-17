@@ -1,5 +1,5 @@
 export const GITHUB_USER = import.meta.env.VITE_GITHUB_USER ?? 'abarriuso';
-export const REPO_NAME = import.meta.env.VITE_REPO_NAME ?? 'melanoma-detection-vgg16';
+export const REPO_NAME = import.meta.env.VITE_REPO_NAME ?? 'melanoma-detection';
 
 export const DATASET_NAME = 'Melanoma Skin Cancer Dataset (10 000 imágenes)';
 export const DATASET_URL =
@@ -13,22 +13,23 @@ export const EXAMPLES_DATASET2_URL =
 
 export const UMBRAL = 0.5;
 
-// Métricas medidas sobre el conjunto de test (1 000 imágenes, 500 por clase)
-// en el entrenamiento conjunto de Kaggle (notebooks/entrenamiento_conjunto_kaggle.ipynb).
-// EfficientNetV2S es el mejor en AUC, accuracy, sensibilidad y especificidad.
+// Métricas sobre el conjunto de test limpio (774 imágenes, tras excluir 226
+// duplicadas o cuasi-duplicadas detectadas en train). Las cifras corresponden
+// a la evaluación documentada en README.md; no implican que un modelo sea
+// categóricamente mejor que los demás.
 export const MODELS = [
   {
     id: 'efficientnetv2s',
     name: 'EfficientNetV2S',
-    label: 'EfficientNetV2S (recomendado)',
+    label: 'EfficientNetV2S',
     path: 'model/efficientnetv2s/model.json',
     temperature: 1.1836,
     version: '2.0.0',
     sizeMB: 21,
-    auc: 0.9742,
-    accuracy: 0.916,
-    sens: 0.882,
-    spec: 0.95,
+    auc: 0.971,
+    accuracy: 0.871,
+    sens: 0.9,
+    spec: 0.844,
   },
   {
     id: 'resnet50v2',
@@ -38,10 +39,10 @@ export const MODELS = [
     temperature: 1.0221,
     version: '2.0.0',
     sizeMB: 25,
-    auc: 0.9727,
-    accuracy: 0.909,
-    sens: 0.878,
-    spec: 0.94,
+    auc: 0.969,
+    accuracy: 0.891,
+    sens: 0.846,
+    spec: 0.933,
   },
   {
     id: 'vgg16',
@@ -51,10 +52,10 @@ export const MODELS = [
     temperature: 1.3359,
     version: '2.0.0',
     sizeMB: 15,
-    auc: 0.9712,
-    accuracy: 0.903,
-    sens: 0.862,
-    spec: 0.944,
+    auc: 0.957,
+    accuracy: 0.885,
+    sens: 0.825,
+    spec: 0.94,
   },
 ];
 
