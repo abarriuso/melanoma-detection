@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { I18nContext } from './i18n/context';
 
 /**
  * React Error Boundary: captura errores de rendering en la UI y muestra
@@ -6,6 +7,8 @@ import { Component } from 'react';
  * de inferencia, etc. no matan toda la app.
  */
 export default class ErrorBoundary extends Component {
+  static contextType = I18nContext;
+
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -20,21 +23,20 @@ export default class ErrorBoundary extends Component {
   }
 
   render() {
+    const { t } = this.context;
     if (this.state.hasError) {
       return (
         <div role="alert" className="error-boundary">
-          <p className="error-boundary-title">
-            Algo falló al renderizar esta sección
-          </p>
+          <p className="error-boundary-title">{t('ebTitle')}</p>
           <p className="error-boundary-msg">
-            {this.state.error?.message || 'Error desconocido'}
+            {this.state.error?.message || t('ebUnknown')}
           </p>
           <button
             type="button"
             className="error-boundary-btn"
             onClick={() => this.setState({ hasError: false, error: null })}
           >
-            Reintentar
+            {t('retry')}
           </button>
         </div>
       );

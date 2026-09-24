@@ -48,7 +48,7 @@ describe('App', () => {
     // Se decodifica de forma async (new Image()); solo comprobamos que no
     // aparece ningún error de tipo/tamaño, es decir, el archivo se acepta.
     await new Promise((r) => setTimeout(r, 50));
-    expect(screen.queryByText(/formato no soportado|demasiado/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/unsupported format|too large|too small/i)).not.toBeInTheDocument();
   });
 
   it('incluye la etiqueta de inferencia local', async () => {
@@ -56,7 +56,33 @@ describe('App', () => {
     render(<App />);
     // Debe mencionar que es client-side
     const body = document.body.textContent;
-    expect(body.toLowerCase()).toMatch(/navegador|local|client|sin servidor|no se envía/i);
+    expect(body.toLowerCase()).toMatch(/browser|local|client/i);
+  });
+
+  it('arranca en inglés y cambia a español con el botón de idioma (y lo recuerda)', async () => {
+    const App = (await import('../App.jsx')).default;
+    const { container } = render(<App />);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/melanoma detection/i);
+    expect(document.documentElement.lang).toBe('en');
+
+    // Un error ya visible también cambia de idioma: se guarda como clave.
+    const input = container.querySelector('input[type="file"]');
+    fireEvent.change(input, { target: { files: [new File(['x'], 'a.pdf', { type: 'application/pdf' })] } });
+    expect(await screen.findByRole('alert')).toHaveTextContent(/unsupported format/i);
+
+    fireEvent.click(screen.getByRole('button', { name: /ver en español/i }));
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/detección de melanoma/i);
+    expect(screen.getByRole('alert')).toHaveTextContent(/formato no soportado/i);
+    expect(document.documentElement.lang).toBe('es');
+    expect(localStorage.getItem('lang')).toBe('es');
+  });
+
+  it('respeta el idioma guardado', async () => {
+    localStorage.setItem('lang', 'es');
+    const App = (await import('../App.jsx')).default;
+    render(<App />);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/detección de melanoma/i);
+    expect(screen.getByRole('button', { name: /read in english/i })).toBeInTheDocument();
   });
 
   it('rechaza un archivo de tipo no soportado', async () => {
@@ -65,7 +91,7 @@ describe('App', () => {
     const input = container.querySelector('input[type="file"]');
     const file = new File(['contenido'], 'lesion.pdf', { type: 'application/pdf' });
     fireEvent.change(input, { target: { files: [file] } });
-    expect(await screen.findByRole('alert')).toHaveTextContent(/formato no soportado/i);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/unsupported format/i);
   });
 
   it('rechaza un archivo que supera el tamaño máximo', async () => {
@@ -74,7 +100,7 @@ describe('App', () => {
     const input = container.querySelector('input[type="file"]');
     const big = new File([new Uint8Array(11 * 1024 * 1024)], 'lesion.jpg', { type: 'image/jpeg' });
     fireEvent.change(input, { target: { files: [big] } });
-    expect(await screen.findByRole('alert')).toHaveTextContent(/demasiado grande/i);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/too large/i);
   });
 
   it('habilita los tres modelos en el selector (todos con pesos publicados)', async () => {
@@ -127,11 +153,11 @@ describe('App', () => {
       const file = new File([new Uint8Array(100)], 'lesion.jpg', { type: 'image/jpeg' });
       fireEvent.change(input, { target: { files: [file] } });
       // Esperar a que el preview aparezca = imageURL cargada, atajo armado.
-      await screen.findByAltText(/lesión dermatoscópica/i, {}, { timeout: 3000 });
+      await screen.findByAltText(/dermoscopic lesion/i, {}, { timeout: 3000 });
 
       // Enter sobre un enlace: el atajo global debe ignorarlo.
-      // (Nombre exacto: el footer tiene otro enlace "Código fuente".)
-      const link = screen.getByRole('link', { name: 'Código' });
+      // (Nombre exacto: el footer tiene otro enlace "Source code".)
+      const link = screen.getByRole('link', { name: 'Code' });
       link.focus();
       const linkDefaultAllowed = fireEvent.keyDown(link, { key: 'Enter' });
       expect(linkDefaultAllowed).toBe(true); // sin preventDefault: navegación intacta

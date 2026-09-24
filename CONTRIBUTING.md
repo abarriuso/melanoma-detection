@@ -1,22 +1,24 @@
-# Contribuir
+# Contributing
 
-Este es un proyecto personal de portfolio y no busco contribuciones
-activamente, pero si encuentras un bug o tienes una idea, abre un issue o un
-PR sin problema.
+This is a personal portfolio project and I am not actively looking for
+contributions, but if you find a bug or have an idea, feel free to open an issue
+or a PR.
 
-## Para arrancar
+## Getting started
 
-1. Haz fork del repo
+1. Fork the repository
 2. `cd demo && pnpm install`
-3. `pnpm dev` para el servidor de desarrollo
-4. Haz tus cambios y abre un PR
+3. `pnpm dev` for the development server
+4. Make your changes and open a PR
 
-## Antes de abrir el PR
+## Before opening the PR
 
-- Pasa `pnpm lint` y `pnpm test` (el CI los ejecuta igualmente en cada PR,
-  junto con el build)
-- Si tu cambio afecta a algo documentado en el README, actualízalo también
+- Run `pnpm lint` and `pnpm test` (CI runs them on every PR anyway, together
+  with the build)
+- If your change affects something documented in the README, update it too
+  (both `README.md` and `README.es.md`)
+- Interface text goes in `demo/src/lib/strings.js`, in English and Spanish
 
-## Licencia
+## Licence
 
-Al contribuir aceptas que tu aportación se licencie bajo MIT.
+By contributing you agree that your contribution is licensed under MIT.

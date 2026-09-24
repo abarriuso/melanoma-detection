@@ -104,6 +104,26 @@
   outline-offset: 3px;
   border-radius: 1px;
 }
+/* Cambio de idioma: mismo aspecto que los enlaces, separado por un filete. */
+.lang-switch {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-left: 1px solid var(--hairline-strong);
+  padding: var(--space-1) 0 var(--space-1) var(--space-5);
+  cursor: pointer;
+}
+.lang-switch:hover {
+  color: var(--accent);
+}
+.lang-switch:focus-visible {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 1px;
+}
 
 /* ---- Hero ------------------------------------------------------------ */
 .hero {

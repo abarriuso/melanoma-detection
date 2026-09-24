@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Demo de detección de melanomas con inferencia client-side (TensorFlow.js)",
+  "description": "Melanoma detection demo with client-side inference (TensorFlow.js)",
   "author": "Adrián Barriuso Pizarro",
   "license": "MIT",
   "scripts": {

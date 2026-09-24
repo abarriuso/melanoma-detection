@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { useI18n } from '../i18n/context';
 
 export default function Dropzone({
   imageURL,
@@ -16,6 +17,7 @@ export default function Dropzone({
   inputRef,
   disabled,
 }) {
+  const { t } = useI18n();
   const onDropzoneKey = (e) => {
     if (disabled) return;
     if (e.key === 'Enter' || e.key === ' ') {
@@ -38,9 +40,9 @@ export default function Dropzone({
         className={`dropzone ${dragActive ? 'drag-active' : ''} ${imageURL ? 'has-image' : ''} ${predicting ? 'is-scanning' : ''}`}
         role="button"
         tabIndex={0}
-        aria-label="Seleccionar imagen de lesión a analizar"
+        aria-label={t('dropAria')}
         aria-describedby="dropzone-hint"
-        aria-roledescription="zona de carga de imagen"
+        aria-roledescription={t('dropRole')}
         onClick={() => !disabled && inputRef.current?.click()}
         onKeyDown={onDropzoneKey}
         onDragOver={onDragOver}
@@ -78,7 +80,7 @@ export default function Dropzone({
                 <img
                   ref={imgRef}
                   src={imageURL}
-                  alt="Lesión dermatoscópica a analizar"
+                  alt={t('previewAlt')}
                   className="preview"
                   onLoad={onImageLoad}
                   onError={onImageError}
@@ -94,8 +96,8 @@ export default function Dropzone({
                 type="button"
                 className="preview-clear"
                 onClick={(e) => { e.stopPropagation(); onClear(); }}
-                aria-label="Quitar imagen"
-                title="Quitar imagen"
+                aria-label={t('clearImage')}
+                title={t('clearImage')}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
@@ -119,14 +121,14 @@ export default function Dropzone({
                 </svg>
                 {imageError ? (
                   <>
-                    <p className="dropzone-title">No se pudo abrir la imagen</p>
-                    <p className="dropzone-sub">Prueba con otro archivo</p>
+                    <p className="dropzone-title">{t('imgErrTitle')}</p>
+                    <p className="dropzone-sub">{t('imgErrSub')}</p>
                   </>
                 ) : (
                   <>
-                    <p className="dropzone-title">Arrastra una imagen dermatoscópica</p>
-                    <p className="dropzone-sub">o haz clic para seleccionar un archivo</p>
-                    <p className="dropzone-formats">JPEG · PNG · WebP · Máx.{"\u00A0"}10{"\u00A0"}MB</p>
+                    <p className="dropzone-title">{t('dropTitle')}</p>
+                    <p className="dropzone-sub">{t('dropSub')}</p>
+                    <p className="dropzone-formats">{t('dropFormats')}</p>
                   </>
                 )}
               </div>

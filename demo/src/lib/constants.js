@@ -1,7 +1,6 @@
 export const GITHUB_USER = import.meta.env.VITE_GITHUB_USER ?? 'abarriuso';
 export const REPO_NAME = import.meta.env.VITE_REPO_NAME ?? 'melanoma-detection';
 
-export const DATASET_NAME = 'Melanoma Skin Cancer Dataset (10 000 imágenes)';
 export const DATASET_URL =
   'https://www.kaggle.com/datasets/hasnainjaved/melanoma-skin-cancer-dataset-of-10000-images';
 

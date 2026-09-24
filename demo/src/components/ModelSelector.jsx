@@ -1,16 +1,18 @@
 import { motion } from 'framer-motion';
 import { MODELS } from '../lib/constants';
+import { useI18n } from '../i18n/context';
 
 export default function ModelSelector({ modelId, onChange, predicting, disabled }) {
+  const { t } = useI18n();
   return (
     <fieldset className="model-selector">
-      <legend className="model-selector-title">Modelo de clasificación</legend>
+      <legend className="model-selector-title">{t('modelLegend')}</legend>
       <div className="model-selector-options">
         {MODELS.map((m, i) => (
           <motion.label
             key={m.id}
             className={`model-card ${modelId === m.id ? 'is-active' : ''} ${m.auc == null ? 'is-pending' : ''}`}
-            title={m.auc == null ? 'Modelo aún sin pesos publicados' : undefined}
+            title={m.auc == null ? t('noWeights') : undefined}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: i * 0.04, duration: 0.25 }}
@@ -39,15 +41,15 @@ export default function ModelSelector({ modelId, onChange, predicting, disabled 
             <span className="model-card-metrics">
               {m.auc != null
                 ? `AUC ${m.auc} · ${m.sizeMB} MB`
-                : 'Pendiente de entrenamiento'}
+                : t('pendingTraining')}
             </span>
             {m.auc != null && (
               <span className="model-card-detail">
-                Sens {m.sens} · Esp {m.spec}
+                {t('sensSpec', m.sens, m.spec)}
               </span>
             )}
             {modelId === m.id && disabled && (
-              <span className="model-card-loading">cargando…</span>
+              <span className="model-card-loading">{t('loadingModel')}</span>
             )}
           </motion.label>
         ))}
