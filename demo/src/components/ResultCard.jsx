@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import ConfidenceGauge from './ConfidenceGauge';
+import { useI18n } from '../i18n/context';
 
 const rowVariants = {
   hidden: { opacity: 0, y: 6 },
@@ -11,23 +12,24 @@ const rowVariants = {
 };
 
 export default function ResultCard({ result }) {
+  const { t } = useI18n();
   if (!result) return null;
 
-  const { label, confidence, ms, esMaligno } = result;
+  const { confidence, ms, esMaligno } = result;
   const statusColor = esMaligno ? 'var(--malignant)' : 'var(--benign)';
 
   return (
     <motion.div
       className="result-card"
       role="region"
-      aria-label="Resultado del análisis"
+      aria-label={t('resultRegion')}
       aria-live="polite"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
     >
-      <p className="result-card-eyebrow">Lectura del instrumento</p>
+      <p className="result-card-eyebrow">{t('resultEyebrow')}</p>
 
       <div className="result-card-header">
         <div className="result-card-label-group">
@@ -37,12 +39,12 @@ export default function ResultCard({ result }) {
             aria-hidden="true"
           />
           <span className="result-card-label" style={{ color: statusColor }}>
-            {label}
+            {esMaligno ? t('malignant') : t('benign')}
           </span>
         </div>
         <span
           className="result-card-latency"
-          title="Tiempo de inferencia en el navegador"
+          title={t('latencyTitle')}
         >
           {ms} ms
         </span>
@@ -58,7 +60,7 @@ export default function ResultCard({ result }) {
             initial="hidden"
             animate="visible"
           >
-            <span className="result-detail-key">Probabilidad calibrada</span>
+            <span className="result-detail-key">{t('calibratedProb')}</span>
             <span className="result-detail-value" style={{ color: statusColor }}>
               {(result.score * 100).toFixed(2)}%
             </span>
@@ -80,7 +82,7 @@ export default function ResultCard({ result }) {
             initial="hidden"
             animate="visible"
           >
-            <span className="result-detail-key">Umbral</span>
+            <span className="result-detail-key">{t('threshold')}</span>
             <span className="result-detail-value mono">0.5</span>
           </motion.div>
         </div>
@@ -88,15 +90,9 @@ export default function ResultCard({ result }) {
 
       <div className="result-card-footer">
         <p className="result-reminder">
-          {esMaligno
-            ? 'Esto no es un diagnóstico. Consulta a un dermatólogo para una evaluación clínica completa.'
-            : 'Esto no es un diagnóstico. El modelo tiene ~12% de falsos negativos. Si tienes una lesión que te preocupa, consulta a un dermatólogo.'}
+          {esMaligno ? t('reminderMal') : t('reminderBen')}
         </p>
-        <p className="result-disclaimer">
-          La confianza refleja la decisión del modelo, no el riesgo real.
-          En clínica, la prevalencia de melanoma es muy baja (~1-5%).
-          No considera historia clínica, exposición solar ni antecedentes familiares.
-        </p>
+        <p className="result-disclaimer">{t('resultDisclaimer')}</p>
       </div>
     </motion.div>
   );

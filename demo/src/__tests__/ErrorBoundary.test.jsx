@@ -28,7 +28,7 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
     expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(screen.getByText(/algo falló/i)).toBeInTheDocument();
+    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
     expect(screen.getByText('Test error')).toBeInTheDocument();
     spy.mockRestore();
   });
@@ -45,9 +45,9 @@ describe('ErrorBoundary', () => {
         <ConditionalThrow />
       </ErrorBoundary>
     );
-    expect(screen.getByText('Reintentar')).toBeInTheDocument();
+    expect(screen.getByText('Retry')).toBeInTheDocument();
     shouldThrow = false;
-    fireEvent.click(screen.getByText('Reintentar'));
+    fireEvent.click(screen.getByText('Retry'));
     rerender(
       <ErrorBoundary>
         <ConditionalThrow />

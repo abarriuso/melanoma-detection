@@ -1,3 +1,5 @@
+import { useI18n } from '../i18n/context';
+
 /**
  * Gauge circular SVG para mostrar la confianza de la predicción,
  * dibujado como un instrumento de anillo: marcas de dial finas,
@@ -8,6 +10,7 @@
 const TICKS = 24;
 
 export default function ConfidenceGauge({ confidence, isMalignant, size = 120 }) {
+  const { t } = useI18n();
   const pct = Math.min(Math.max(confidence * 100, 0), 100);
   const radius = 42;
   const stroke = 5;
@@ -38,7 +41,7 @@ export default function ConfidenceGauge({ confidence, isMalignant, size = 120 })
     <div
       className="confidence-gauge"
       role="img"
-      aria-label={`Confianza: ${pct.toFixed(1)}%`}
+      aria-label={t('gaugeAria', pct.toFixed(1))}
       style={{ width: size, height: size }}
     >
       <svg width={size} height={size} viewBox="0 0 100 100" className="gauge-svg">
@@ -80,7 +83,7 @@ export default function ConfidenceGauge({ confidence, isMalignant, size = 120 })
         <span className="gauge-value" style={{ color }}>
           {pct.toFixed(1)}%
         </span>
-        <span className="gauge-label">confianza</span>
+        <span className="gauge-label">{t('gaugeLabel')}</span>
       </div>
     </div>
   );

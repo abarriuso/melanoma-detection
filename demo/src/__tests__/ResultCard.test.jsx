@@ -6,7 +6,6 @@ const result = {
   score: 0.87,
   logit: 1.9,
   ms: 120,
-  label: 'Maligno',
   confidence: 0.87,
   esMaligno: true,
 };
@@ -14,9 +13,9 @@ const result = {
 describe('ResultCard', () => {
   it('anuncia el resultado a lectores de pantalla: región con aria-live="polite" (F-03)', () => {
     render(<ResultCard result={result} />);
-    const region = screen.getByRole('region', { name: /resultado del análisis/i });
+    const region = screen.getByRole('region', { name: /analysis result/i });
     expect(region).toHaveAttribute('aria-live', 'polite');
-    expect(region).toHaveTextContent(/maligno/i);
+    expect(region).toHaveTextContent(/malignant/i);
     expect(region).toHaveTextContent(/87/);
   });
 

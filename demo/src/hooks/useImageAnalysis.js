@@ -49,12 +49,12 @@ export function useImageAnalysis(predictFn) {
   const handleFile = useCallback((file) => {
     if (!file) return;
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      setFileError('Formato no soportado. Usa JPEG, PNG o WebP.');
+      setFileError({ key: 'errFormat' });
       return;
     }
     if (file.size > MAX_FILE_BYTES) {
       const mb = (file.size / (1024 * 1024)).toFixed(1);
-      setFileError(`Imagen demasiado grande (${mb} MB). Máximo 10 MB.`);
+      setFileError({ key: 'errTooBigMB', args: [mb] });
       return;
     }
     const img = new Image();
@@ -63,12 +63,12 @@ export function useImageAnalysis(predictFn) {
       const { naturalWidth: w, naturalHeight: h } = img;
       if (w < 16 || h < 16) {
         URL.revokeObjectURL(objectURL);
-        setFileError(`Imagen demasiado pequeña (${w}×${h}). Mínimo 16×16 píxeles.`);
+        setFileError({ key: 'errTooSmallPx', args: [w, h] });
         return;
       }
       if (w > 4096 || h > 4096) {
         URL.revokeObjectURL(objectURL);
-        setFileError(`Imagen demasiado grande (${w}×${h}). Máximo 4096×4096 píxeles.`);
+        setFileError({ key: 'errTooBigPx', args: [w, h] });
         return;
       }
       setFileError(null);
@@ -76,7 +76,7 @@ export function useImageAnalysis(predictFn) {
     };
     img.onerror = () => {
       URL.revokeObjectURL(objectURL);
-      setFileError('No se pudo decodificar la imagen.');
+      setFileError({ key: 'errDecode' });
     };
     img.src = objectURL;
   }, [setImage]);
@@ -90,11 +90,11 @@ export function useImageAnalysis(predictFn) {
     const w = imgElement.naturalWidth;
     const h = imgElement.naturalHeight;
     if (!w || !h) {
-      setPredictionError('No se pudo decodificar la imagen. Prueba con otro archivo.');
+      setPredictionError({ key: 'errDecodeRetry' });
       return;
     }
     if (w > 4096 || h > 4096) {
-      setPredictionError(`Imagen demasiado grande (${w}×${h}). Máximo 4096×4096 píxeles.`);
+      setPredictionError({ key: 'errTooBigPx', args: [w, h] });
       return;
     }
     const myToken = ++runTokenRef.current;
@@ -111,18 +111,13 @@ export function useImageAnalysis(predictFn) {
         score: calibrated,
         logit,
         ms,
-        label: esMaligno ? 'Maligno' : 'Benigno',
         confidence: esMaligno ? calibrated : 1 - calibrated,
         esMaligno,
       });
     } catch (err) {
       console.error('Error en la predicción:', err);
       if (mountedRef.current) {
-        setPredictionError(
-          err?.message === 'timeout'
-            ? 'El análisis está tardando demasiado (posible problema con la GPU del navegador). Inténtalo de nuevo.'
-            : 'Error al analizar la imagen. Inténtalo de nuevo.',
-        );
+        setPredictionError({ key: err?.message === 'timeout' ? 'errTimeout' : 'errAnalyze' });
       }
     } finally {
       if (mountedRef.current && myToken === runTokenRef.current) setPredicting(false);

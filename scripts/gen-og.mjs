@@ -49,30 +49,30 @@ const svg = `<?xml version="1.0" encoding="UTF-8"?>
   </text>
   <text x="1120" y="76" fill="${MUTED}" font-family="${MONO}"
         font-size="18" letter-spacing="1.5" text-anchor="end">
-    INFERENCIA 100 % LOCAL
+    100 % LOCAL INFERENCE
   </text>
 
   <!-- Título principal (sans semibold, "melanoma" en acento roman) -->
   <text x="80" y="245" fill="${INK}" font-family="${SANS}"
         font-size="88" font-weight="600" letter-spacing="-2">
-    Detección de <tspan fill="${ACCENT}">melanoma</tspan>
+    <tspan fill="${ACCENT}">Melanoma</tspan> detection
   </text>
 
   <!-- Subtítulo -->
   <text x="80" y="315" fill="${MUTED}" font-family="${SANS}"
         font-size="27" font-weight="400">
-    EfficientNetV2S con fine-tuning. Clasificación benigno/maligno
+    Fine-tuned EfficientNetV2S. Benign/malignant classification
   </text>
   <text x="80" y="355" fill="${MUTED}" font-family="${SANS}"
         font-size="27" font-weight="400">
-    ejecutada por completo en tu navegador.
+    that runs entirely in your browser.
   </text>
 
   <!-- Métricas: columnas separadas por filetes -->
   <g font-family="${MONO}">
     <line x1="80" y1="425" x2="1120" y2="425" stroke="${HAIRLINE}" stroke-width="1"/>
 
-    <text x="80" y="465" fill="${MUTED}" font-size="15" letter-spacing="1.5">AUC EN TEST</text>
+    <text x="80" y="465" fill="${MUTED}" font-size="15" letter-spacing="1.5">TEST AUC</text>
     <text x="80" y="510" fill="${INK}" font-size="40" font-weight="700">0.971</text>
 
     <line x1="400" y1="440" x2="400" y2="525" stroke="${HAIRLINE}" stroke-width="1"/>
@@ -80,7 +80,7 @@ const svg = `<?xml version="1.0" encoding="UTF-8"?>
     <text x="440" y="510" fill="${INK}" font-size="40" font-weight="700">87.1 %</text>
 
     <line x1="700" y1="440" x2="700" y2="525" stroke="${HAIRLINE}" stroke-width="1"/>
-    <text x="740" y="465" fill="${MUTED}" font-size="15" letter-spacing="1.5">SENSIBILIDAD</text>
+    <text x="740" y="465" fill="${MUTED}" font-size="15" letter-spacing="1.5">SENSITIVITY</text>
     <text x="740" y="510" fill="${INK}" font-size="40" font-weight="700">90.0 %</text>
 
     <line x1="80" y1="545" x2="1120" y2="545" stroke="${HAIRLINE}" stroke-width="1"/>
@@ -93,7 +93,7 @@ const svg = `<?xml version="1.0" encoding="UTF-8"?>
   </text>
   <text x="1120" y="590" fill="${ACCENT}" font-family="${MONO}"
         font-size="17" font-weight="500" text-anchor="end">
-    abarriuso.github.io/melanoma-detection-vgg16
+    abarriuso.github.io/melanoma-detection
   </text>
 </svg>`;
 

@@ -13,6 +13,8 @@ import ModelSelector from './components/ModelSelector';
 import ExampleGallery from './components/ExampleGallery';
 import Footer from './components/Footer';
 import ErrorBoundary from './ErrorBoundary';
+import I18nProvider from './i18n/I18nProvider';
+import { useI18n } from './i18n/context';
 import './App.css';
 
 const BASE = import.meta.env.BASE_URL;
@@ -27,6 +29,19 @@ function shuffle(arr) {
 }
 
 export default function App() {
+  return (
+    <I18nProvider>
+      <AppContent />
+    </I18nProvider>
+  );
+}
+
+function AppContent() {
+  const { lang, setLang, t } = useI18n();
+  // Los errores llegan como { key, args } y se traducen al pintarlos, así
+  // cambiar de idioma también cambia un mensaje que ya está en pantalla.
+  const errorText = (err) => t(err.key, ...(err.args ?? []));
+
   // --- Persistencia ---
   const [modelId, setModelId] = useLocalStorage('modelId', 'efficientnetv2s');
   const storedModel = getModel(modelId);
@@ -209,7 +224,7 @@ export default function App() {
       </div>
 
       <div className="app" aria-busy={modelStatus === 'loading'}>
-        <a href="#main-content" className="skip-link">Saltar al contenido principal</a>
+        <a href="#main-content" className="skip-link">{t('skipLink')}</a>
 
         <header className="masthead">
           <span className="masthead-brand">
@@ -219,13 +234,22 @@ export default function App() {
             </svg>
             melanoma-detection
           </span>
-          <nav className="toplinks" aria-label="Enlaces al código">
+          <nav className="toplinks" aria-label={t('codeLinks')}>
             <a href={`https://github.com/${GITHUB_USER}/${REPO_NAME}/blob/main/notebooks/entrenamiento_conjunto_kaggle.ipynb`} target="_blank" rel="noreferrer">
               Notebook
             </a>
             <a href={`https://github.com/${GITHUB_USER}/${REPO_NAME}`} target="_blank" rel="noreferrer">
-              Código
+              {t('navCode')}
             </a>
+            <button
+              type="button"
+              className="lang-switch"
+              lang={lang === 'en' ? 'es' : 'en'}
+              aria-label={t('switchToLabel')}
+              onClick={() => setLang(lang === 'en' ? 'es' : 'en')}
+            >
+              {t('switchTo')}
+            </button>
           </nav>
         </header>
 
@@ -239,7 +263,7 @@ export default function App() {
                 <section className="panel" aria-labelledby="panel1-title">
                   <div className="panel-head">
                     <span className="panel-idx" aria-hidden="true">01</span>
-                    <h2 id="panel1-title">Captura</h2>
+                    <h2 id="panel1-title">{t('panelCapture')}</h2>
                   </div>
                   <div className="panel-body">
                     <ModelStatusBar status={modelStatus} progress={progress} backend={backend} />
@@ -248,12 +272,7 @@ export default function App() {
                       {slowGpu && modelStatus === 'ready' && <GpuWarning />}
                     </AnimatePresence>
 
-                    <p className="disclaimer disclaimer--top">
-                      Proyecto académico de investigación. No constituye un dispositivo médico
-                      ni sustituye la valoración de un profesional sanitario. El modelo tiene
-                      una tasa de falsos negativos del ~12%; consulta siempre a un dermatólogo.
-                      Diseñado exclusivamente para imágenes dermatoscópicas.
-                    </p>
+                    <p className="disclaimer disclaimer--top">{t('disclaimerTop')}</p>
 
                     <Dropzone
                       imageURL={imageURL}
@@ -274,24 +293,24 @@ export default function App() {
 
                     <AnimatePresence>
                       {fileError && (
-                        <motion.div className="file-error" role="alert" {...fadeUp}>{fileError}</motion.div>
+                        <motion.div className="file-error" role="alert" {...fadeUp}>{errorText(fileError)}</motion.div>
                       )}
                     </AnimatePresence>
 
                     <AnimatePresence>
                       {predictionError && (
-                        <motion.div className="file-error" role="alert" {...fadeUp}>{predictionError}</motion.div>
+                        <motion.div className="file-error" role="alert" {...fadeUp}>{errorText(predictionError)}</motion.div>
                       )}
                     </AnimatePresence>
 
                     {predicting && (
                       <p className="analyzing-status" role="status" aria-live="polite">
-                        Analizando…
+                        {t('analyzing')}
                       </p>
                     )}
                     {!predicting && imageURL && !imageError && modelStatus === 'ready' && (result || predictionError) && (
                       <button type="button" className="reanalyze-btn" onClick={analizar}>
-                        {predictionError ? 'Reintentar análisis' : 'Analizar de nuevo'}
+                        {predictionError ? t('retryAnalysis') : t('analyzeAgain')}
                       </button>
                     )}
 
@@ -313,7 +332,7 @@ export default function App() {
                 <section className="panel panel--sticky" aria-labelledby="panel2-title">
                   <div className="panel-head">
                     <span className="panel-idx" aria-hidden="true">02</span>
-                    <h2 id="panel2-title">Instrumento</h2>
+                    <h2 id="panel2-title">{t('panelInstrument')}</h2>
                   </div>
                   <div className="panel-body">
                     <ModelSelector
@@ -324,9 +343,7 @@ export default function App() {
                     />
 
                     <div className="disclaimer">
-                      <strong>Nota técnica:</strong> Los modelos usan calibración de temperatura
-                      para ajustar las probabilidades de salida. El umbral de decisión es {UMBRAL}.
-                      EfficientNetV2S ofrece el mejor equilibrio entre precisión y tamaño.
+                      <strong>{t('techNoteLabel')}</strong> {t('techNote', UMBRAL)}
                     </div>
                   </div>
                 </section>

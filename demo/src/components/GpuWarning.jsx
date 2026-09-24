@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
+import { useI18n } from '../i18n/context';
 
 export default function GpuWarning() {
+  const { t } = useI18n();
   return (
     <motion.div
       className="gpu-warning"
@@ -16,9 +18,7 @@ export default function GpuWarning() {
         <circle cx="8" cy="11.6" r="0.7" fill="currentColor" />
       </svg>
       <div>
-        <strong>La aceleración gráfica del navegador está desactivada o no disponible.</strong>{' '}
-        La página funcionará, pero cada análisis puede tardar minutos en vez de segundos.
-        En Chrome/Edge: Configuración → Sistema → «Usar aceleración por hardware cuando esté disponible», y recarga.
+        <strong>{t('gpuTitle')}</strong> {t('gpuText')}
       </div>
     </motion.div>
   );
