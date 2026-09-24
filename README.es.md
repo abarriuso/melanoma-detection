@@ -122,21 +122,23 @@ sus estadísticas se degradan con facilidad al reentrenar con lotes pequeños.
 
 Métricas sobre el conjunto de test **limpio** (774 imágenes tras excluir 226
 contaminadas por duplicados o cuasi-duplicados en train; ver
-[`scripts/dedup_test.py`](scripts/dedup_test.py)). Estas cifras describen la
-evaluación documentada del modelo `.keras` original, salvo el AUC de VGG16, que
-se calculó directamente sobre el modelo TF.js. El artefacto servido en la demo
-está cuantizado a `uint8`, por lo que la tabla no debe interpretarse como una
-medición directa del artefacto cuantizado.
+[`scripts/dedup_test.py`](scripts/dedup_test.py)). Accuracy, sensibilidad,
+especificidad, VPP, F1 y FN salen de re-evaluar el artefacto servido en la demo
+([`scripts/reval_tfjs.mjs`](scripts/reval_tfjs.mjs): pesos TF.js guardados en
+`uint8` y ejecutados en float32, con el mismo preprocesado que el cliente). El
+AUC de EfficientNetV2S y ResNet50V2 sale del modelo `.keras` original; el de
+VGG16, del artefacto TF.js.
 
 | Modelo | Accuracy | AUC | Sensibilidad | Especificidad | VPP (maligno) | F1 macro | T | FN |
 |--------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **EfficientNetV2S** | **87.1 %** | **0.971** | **90.0 %** | **84.4 %** | **85.2 %** | **0.88** | 1.184 | **37** |
+| **EfficientNetV2S** | **87.1 %** | **0.971** | **90.0 %** | **84.4 %** | **84.1 %** | **0.87** | 1.184 | **37** |
 | ResNet50V2 | 89.1 % | 0.969 | 84.6 % | 93.3 % | 92.1 % | 0.89 | 1.022 | 57 |
 | VGG16 | 88.5 % | 0.957 | 82.5 % | 94.0 % | 92.7 % | 0.88 | 1.336 | 65 |
 
-*AUC para EfficientNetV2S y ResNet50V2 se estima a partir del modelo `.keras`
-original; el AUC de VGG16 se calcula directamente sobre el test limpio con el
-modelo TF.js. Sensibilidad = recall de la clase maligna. VPP = valor predictivo
+*Intervalos de Wilson al 95 % sobre el test limpio — accuracy: EfficientNetV2S
+84,5–89,3 %, ResNet50V2 86,8–91,1 %, VGG16 86,1–90,6 %; sensibilidad: 86,6–92,7 %,
+80,6–87,9 %, 78,3–86,0 %; especificidad: 80,5–87,6 %, 90,4–95,4 %, 91,3–96,0 %.
+Sensibilidad = recall de la clase maligna. VPP = valor predictivo
 positivo = precisión sobre malignos. T = temperatura de calibración. FN =
 melanomas no detectados. Precisión, F1 y matrices de confusión se derivan del
 umbral 0.5.*
@@ -171,7 +173,7 @@ umbral 0.5.*
   clínicamente más grave. La ponderación de clases empuja hacia la sensibilidad a
   costa de más falsos positivos; en un escenario real convendría además bajar el
   umbral de decisión por debajo de 0.5.
-- El VPP (~85 %) está inflado por el balance 50/50 del test. Con la prevalencia
+- El VPP (~84 %) está inflado por el balance 50/50 del test. Con la prevalencia
   real (mucho menor), el VPP sería sustancialmente más bajo; la curva
   Precision-Recall refleja mejor ese régimen que la ROC [4].
 
@@ -271,14 +273,14 @@ El despliegue a GitHub Pages es automático en cada push a `main` (Actions).
 
 - **Sin validación externa.** Un solo conjunto de datos; se desconoce la
   generalización a otros (ISIC, HAM10000 [14]).
-- **Métricas medidas en el modelo original; artefacto servido cuantizado a
-  `uint8`.** La tabla no es una evaluación directa del artefacto cuantizado.
+- **Fuentes de AUC mezcladas:** el AUC de EfficientNetV2S y ResNet50V2 sale del
+  modelo `.keras` original; el resto de métricas, del artefacto servido.
 - **Test contaminado:** 226/1 000 imágenes del test original tenían duplicados o
   cuasi-duplicados en train; aunque se han excluido para la tabla principal, la
   partición original no fue diseñada inicialmente con una separación por lesión
   o paciente.
-- **Sin validación cruzada ni intervalos de confianza.** Las diferencias entre
-  modelos pueden deberse al azar.
+- **Sin validación cruzada.** Los intervalos de confianza de arriba se solapan:
+  las diferencias entre modelos pueden deberse al azar.
 - **Desbalance de prevalencia:** el 50/50 del test no refleja la práctica clínica;
   el VPP no es trasladable directamente.
 - **Sin análisis por subgrupos** de edad, sexo, fototipo o dispositivo de captura.

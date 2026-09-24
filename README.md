@@ -118,21 +118,23 @@ its statistics degrade easily when retraining with small batches.
 
 Metrics on the **clean** test set (774 images after excluding 226 contaminated
 by duplicates or near-duplicates in train; see
-[`scripts/dedup_test.py`](scripts/dedup_test.py)). These figures describe the
-documented evaluation of the original `.keras` model, except the VGG16 AUC, which
-was computed directly on the TF.js model. The artefact served in the demo is
-quantised to `uint8`, so the table should not be read as a direct measurement of
-the quantised artefact.
+[`scripts/dedup_test.py`](scripts/dedup_test.py)). Accuracy, sensitivity,
+specificity, PPV, F1 and FN come from re-evaluating the artefact served in the
+demo ([`scripts/reval_tfjs.mjs`](scripts/reval_tfjs.mjs): TF.js weights stored
+as `uint8` and run in float32, with the same preprocessing as the client). The
+AUC of EfficientNetV2S and ResNet50V2 comes from the original `.keras` model;
+the VGG16 AUC from the TF.js artefact.
 
 | Model | Accuracy | AUC | Sensitivity | Specificity | PPV (malignant) | Macro F1 | T | FN |
 |-------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **EfficientNetV2S** | **87.1 %** | **0.971** | **90.0 %** | **84.4 %** | **85.2 %** | **0.88** | 1.184 | **37** |
+| **EfficientNetV2S** | **87.1 %** | **0.971** | **90.0 %** | **84.4 %** | **84.1 %** | **0.87** | 1.184 | **37** |
 | ResNet50V2 | 89.1 % | 0.969 | 84.6 % | 93.3 % | 92.1 % | 0.89 | 1.022 | 57 |
 | VGG16 | 88.5 % | 0.957 | 82.5 % | 94.0 % | 92.7 % | 0.88 | 1.336 | 65 |
 
-*The AUC for EfficientNetV2S and ResNet50V2 is estimated from the original
-`.keras` model; the VGG16 AUC is computed directly on the clean test set with
-the TF.js model. Sensitivity = recall of the malignant class. PPV = positive
+*95 % Wilson intervals on the clean test set — accuracy: EfficientNetV2S
+84.5–89.3 %, ResNet50V2 86.8–91.1 %, VGG16 86.1–90.6 %; sensitivity: 86.6–92.7 %,
+80.6–87.9 %, 78.3–86.0 %; specificity: 80.5–87.6 %, 90.4–95.4 %, 91.3–96.0 %.
+Sensitivity = recall of the malignant class. PPV = positive
 predictive value = precision on malignant. T = calibration temperature. FN =
 missed melanomas. Precision, F1 and confusion matrices use a 0.5 threshold.*
 
@@ -163,7 +165,7 @@ missed melanomas. Precision, F1 and confusion matrices use a 0.5 threshold.*
   serious clinical error. Class weighting pushes towards sensitivity at the cost
   of more false positives; in a real setting the decision threshold should also
   be lowered below 0.5.
-- The PPV (~85 %) is inflated by the 50/50 balance of the test set. With the real
+- The PPV (~84 %) is inflated by the 50/50 balance of the test set. With the real
   (much lower) prevalence the PPV would be substantially lower; the
   Precision-Recall curve reflects that regime better than the ROC [4].
 
@@ -264,14 +266,15 @@ Deployment to GitHub Pages is automatic on every push to `main` (Actions).
 
 - **No external validation.** A single dataset; generalisation to others (ISIC,
   HAM10000 [14]) is unknown.
-- **Metrics measured on the original model; the served artefact is quantised to
-  `uint8`.** The table is not a direct evaluation of the quantised artefact.
+- **Mixed AUC sources:** the AUC of EfficientNetV2S and ResNet50V2 comes from the
+  original `.keras` model, while every other metric comes from the served
+  artefact.
 - **Contaminated test set:** 226/1,000 images of the original test set had
   duplicates or near-duplicates in train; although they are excluded from the
   main table, the original split was not designed with a per-lesion or
   per-patient separation.
-- **No cross-validation or confidence intervals.** Differences between models
-  may be due to chance.
+- **No cross-validation.** The confidence intervals above overlap: differences
+  between models may be due to chance.
 - **Prevalence mismatch:** the 50/50 test set does not reflect clinical practice;
   the PPV does not carry over directly.
 - **No subgroup analysis** by age, sex, phototype or capture device.
