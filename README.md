@@ -9,7 +9,7 @@ the user's browser.
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-FF6F00)
-![React](https://img.shields.io/badge/React-18-61DAFB)
+![React](https://img.shields.io/badge/React-19-61DAFB)
 ![TF.js](https://img.shields.io/badge/TF.js-Client--side-FF6F00)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -103,6 +103,24 @@ Training ran on Kaggle (T4 GPU) with a joint notebook that trains the three
 architectures in a single run
 ([`notebooks/entrenamiento_conjunto_kaggle.ipynb`](notebooks/entrenamiento_conjunto_kaggle.ipynb)).
 
+The whole pipeline, from the dataset to the demo:
+
+```mermaid
+flowchart LR
+  D["Kaggle dataset<br/>10,000 images · CC0"] --> S["Split<br/>train / validation 80:20<br/>test 1,000"]
+  S --> AUG["Augmentation<br/>(training set only)"]
+  AUG --> B["ImageNet backbones<br/>EfficientNetV2S · ResNet50V2 · VGG16"]
+  B --> P1["Phase 1: frozen backbone<br/>RMSprop 1e-4"]
+  P1 --> P2["Phase 2: fine-tuning<br/>Adam 1e-5 – 1e-6"]
+  P2 --> T["Temperature scaling"]
+  T --> K[".keras"]
+  K --> J["TF.js, uint8 weights"]
+  S --> DD["Near-duplicate audit<br/>aHash, Hamming ≤ 12<br/>clean test: 774"]
+  J --> R["Metrics of the served artefact<br/>on the clean test set"]
+  DD --> R
+  J --> W["Web demo"]
+```
+
 ## Models compared
 
 | Model | Preprocessing (in the graph) | Fine-tuning (phase 2) | Phase 2 LR | Grad-CAM layer (notebooks) | Reference |
@@ -167,7 +185,7 @@ missed melanomas. Precision, F1 and confusion matrices use a 0.5 threshold.*
   be lowered below 0.5.
 - The PPV (~84 %) is inflated by the 50/50 balance of the test set. With the real
   (much lower) prevalence the PPV would be substantially lower; the
-  Precision-Recall curve reflects that regime better than the ROC [4].
+  Precision-Recall curve reflects that regime better than the ROC [4], [15].
 
 ## Interpretability and calibration
 
@@ -189,6 +207,20 @@ The design principle is to move computation to the client: inference runs in the
 browser with TensorFlow.js, with no *backend*. **The user's image never leaves
 their device.**
 
+```mermaid
+flowchart LR
+  subgraph gh["GitHub"]
+    CI["Actions<br/>lint · tests · build"] --> PAGES["GitHub Pages<br/>app + model.json + .bin shards"]
+  end
+  subgraph browser["User's browser — nothing is uploaded"]
+    IMG["Image chosen by the user<br/>type and size checked"] --> PRE["resize 224×224 · ÷255"]
+    PRE --> TF["TensorFlow.js<br/>WebGL, CPU fallback"]
+    TF --> CAL["calibration<br/>σ(logit / T)"]
+    CAL --> UI["Result and notice<br/>English / Spanish"]
+  end
+  PAGES -->|model downloaded once| TF
+```
+
 | Layer | Environment | Responsibility |
 |-------|-------------|----------------|
 | Training | Kaggle / Colab (GPU) | Train and export the models |
@@ -196,7 +228,7 @@ their device.**
 | Hosting | GitHub Pages + Actions | Serve static files and automate deployment |
 
 The `.keras` model is converted to TF.js with `uint8` quantisation (the default
-one weighs ~21 MB) and served as static files. The app uses React 18 + Vite, with
+one weighs ~21 MB) and served as static files. The app uses React 19 + Vite, with
 tensor memory management (`tf.tidy` + `dispose`) and validation of the uploaded
 image (type and size). The interface is available in English and Spanish.
 
@@ -296,36 +328,69 @@ conditions. No clinical decisions should be made based on this demo.
 
 ## References
 
-[1] WHO — Skin cancer overview.
+[1] Gershenwald, J. E., Scolyer, R. A., Hess, K. R., et al. (2017). Melanoma
+staging: Evidence-based changes in the American Joint Committee on Cancer eighth
+edition cancer staging manual. *CA: A Cancer Journal for Clinicians, 67*(6),
+472–492. https://doi.org/10.3322/caac.21409
 
-[2] Esteva et al., "Dermatologist-level classification of skin cancer with deep
-neural networks", Nature 2017.
+[2] Esteva, A., Kuprel, B., Novoa, R. A., Ko, J., Swetter, S. M., Blau, H. M., &
+Thrun, S. (2017). Dermatologist-level classification of skin cancer with deep
+neural networks. *Nature, 542*(7639), 115–118. https://doi.org/10.1038/nature21056
 
-[3] Hasnain Javed, *Melanoma Skin Cancer Dataset* (Kaggle).
+[3] Javed, H. (n.d.). *Melanoma skin cancer dataset of 10000 images* [Data set].
+Kaggle. https://www.kaggle.com/datasets/hasnainjaved/melanoma-skin-cancer-dataset-of-10000-images
 
-[4] Hosny et al., considerations on class imbalance and prevalence in medical
-classification.
+[4] He, H., & Garcia, E. A. (2009). Learning from imbalanced data. *IEEE
+Transactions on Knowledge and Data Engineering, 21*(9), 1263–1284.
+https://doi.org/10.1109/TKDE.2008.239
 
-[5] Deng et al., ImageNet: A Large-Scale Hierarchical Image Database.
+[5] Deng, J., Dong, W., Socher, R., Li, L.-J., Li, K., & Fei-Fei, L. (2009).
+ImageNet: A large-scale hierarchical image database. In *2009 IEEE Conference on
+Computer Vision and Pattern Recognition* (pp. 248–255).
+https://doi.org/10.1109/CVPR.2009.5206848
 
-[6] Pan & Yang, "A Survey on Transfer Learning", IEEE TKDE 2010.
+[6] Pan, S. J., & Yang, Q. (2010). A survey on transfer learning. *IEEE
+Transactions on Knowledge and Data Engineering, 22*(10), 1345–1359.
+https://doi.org/10.1109/TKDE.2009.191
 
-[7] Tan & Le, "EfficientNetV2: Smaller Models and Faster Training", ICML 2021.
+[7] Tan, M., & Le, Q. V. (2021). EfficientNetV2: Smaller models and faster
+training. In *Proceedings of the 38th International Conference on Machine
+Learning* (PMLR 139, pp. 10096–10106). https://arxiv.org/abs/2104.00298
 
-[8] He et al., "Identity Mappings in Deep Residual Networks", ECCV 2016.
+[8] He, K., Zhang, X., Ren, S., & Sun, J. (2016). Identity mappings in deep
+residual networks. In *Computer Vision – ECCV 2016* (LNCS 9908, pp. 630–645).
+https://doi.org/10.1007/978-3-319-46493-0_38
 
-[9] Simonyan & Zisserman, "Very Deep Convolutional Networks for Large-Scale
-Image Recognition", ICLR 2015.
+[9] Simonyan, K., & Zisserman, A. (2015). Very deep convolutional networks for
+large-scale image recognition. In *3rd International Conference on Learning
+Representations (ICLR)*. https://arxiv.org/abs/1409.1556
 
-[10] Selvaraju et al., "Grad-CAM", ICCV 2017.
+[10] Selvaraju, R. R., Cogswell, M., Das, A., Vedantam, R., Parikh, D., & Batra,
+D. (2017). Grad-CAM: Visual explanations from deep networks via gradient-based
+localization. In *2017 IEEE International Conference on Computer Vision* (pp.
+618–626). https://doi.org/10.1109/ICCV.2017.74
 
-[11] Chattopadhyay et al., "Grad-CAM++", WACV 2018.
+[11] Chattopadhay, A., Sarkar, A., Howlader, P., & Balasubramanian, V. N. (2018).
+Grad-CAM++: Generalized gradient-based visual explanations for deep
+convolutional networks. In *2018 IEEE Winter Conference on Applications of
+Computer Vision* (pp. 839–847). https://doi.org/10.1109/WACV.2018.00097
 
-[12] Guo et al., "On Calibration of Modern Neural Networks", ICML 2017.
+[12] Guo, C., Pleiss, G., Sun, Y., & Weinberger, K. Q. (2017). On calibration of
+modern neural networks. In *Proceedings of the 34th International Conference on
+Machine Learning* (PMLR 70, pp. 1321–1330). https://arxiv.org/abs/1706.04599
 
-[13] Gal & Ghahramani, "Dropout as a Bayesian Approximation", ICML 2016.
+[13] Gal, Y., & Ghahramani, Z. (2016). Dropout as a Bayesian approximation:
+Representing model uncertainty in deep learning. In *Proceedings of the 33rd
+International Conference on Machine Learning* (PMLR 48, pp. 1050–1059).
+https://arxiv.org/abs/1506.02142
 
-[14] Tschandl et al., "The HAM10000 dataset", Scientific Data 2018.
+[14] Tschandl, P., Rosendahl, C., & Kittler, H. (2018). The HAM10000 dataset, a
+large collection of multi-source dermatoscopic images of common pigmented skin
+lesions. *Scientific Data, 5*, 180161. https://doi.org/10.1038/sdata.2018.161
+
+[15] Saito, T., & Rehmsmeier, M. (2015). The precision-recall plot is more
+informative than the ROC plot when evaluating binary classifiers on imbalanced
+datasets. *PLOS ONE, 10*(3), e0118432. https://doi.org/10.1371/journal.pone.0118432
 
 ## Licence and data
 
