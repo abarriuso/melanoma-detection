@@ -40,15 +40,23 @@ describe('App', () => {
   });
 
   it('sube un archivo válido sin necesitar ningún clic adicional', async () => {
-    const App = (await import('../App.jsx')).default;
-    const { container } = render(<App />);
-    const input = container.querySelector('input[type="file"]');
-    const file = new File([new Uint8Array(100)], 'lesion.jpg', { type: 'image/jpeg' });
-    fireEvent.change(input, { target: { files: [file] } });
-    // Se decodifica de forma async (new Image()); solo comprobamos que no
-    // aparece ningún error de tipo/tamaño, es decir, el archivo se acepta.
-    await new Promise((r) => setTimeout(r, 50));
-    expect(screen.queryByText(/unsupported format|too large|too small/i)).not.toBeInTheDocument();
+    // jsdom no soporta blob URLs, y el adaptador de vitest para
+    // createObjectURL lee campos internos del Blob que jsdom 30.1 ya no tiene.
+    const create = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
+    try {
+      const App = (await import('../App.jsx')).default;
+      const { container } = render(<App />);
+      const input = container.querySelector('input[type="file"]');
+      const file = new File([new Uint8Array(100)], 'lesion.jpg', { type: 'image/jpeg' });
+      fireEvent.change(input, { target: { files: [file] } });
+      // Se decodifica de forma async (new Image()); solo comprobamos que no
+      // aparece ningún error de tipo/tamaño, es decir, el archivo se acepta.
+      await new Promise((r) => setTimeout(r, 50));
+      expect(create).toHaveBeenCalledWith(file);
+      expect(screen.queryByText(/unsupported format|too large|too small/i)).not.toBeInTheDocument();
+    } finally {
+      create.mockRestore();
+    }
   });
 
   it('incluye la etiqueta de inferencia local', async () => {
