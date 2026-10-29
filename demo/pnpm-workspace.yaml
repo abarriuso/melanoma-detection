@@ -6,8 +6,6 @@ allowBuilds:
 # cuenta a un mantenedor de npm, el paquete malicioso suele estar publicado
 # unas pocas horas hasta que lo retiran; esperar cubre esa ventana.
 minimumReleaseAge: 1440
-minimumReleaseAgeExclude:
-  - brace-expansion@1.1.18
 
 # Fuerza versiones parcheadas de dependencias transitivas vulnerables
 # (reportadas por Dependabot/pnpm audit), sin subir de major las
@@ -15,14 +13,17 @@ minimumReleaseAgeExclude:
 overrides:
   form-data@>=4.0.0 <4.0.6: ^4.0.6
   undici@>=7.0.0 <7.28.0: ^7.28.0
+  undici@>=8.0.0 <8.12.2: ^8.12.2
   # brace-expansion@5 cambió su interfaz CJS (minimatch@3.x, usado por
   # eslint, rompe con "expand is not a function" si se fuerza esa mayor
-  # globalmente) — la línea 1.x se queda en su último parche (1.1.18) y
-  # el resto de consumidores (minimatch@5/10) sí toleran saltar a 5.0.9.
-  brace-expansion@<1.1.18: ^1.1.18
-  brace-expansion@>=2.0.0 <5.0.9: ^5.0.9
-  fast-uri@<3.1.6: ^3.1.6
+  # globalmente) — la línea 1.x se queda en su último parche (1.1.21) y
+  # el resto de consumidores (minimatch@5/10) sí toleran saltar a 5.0.12.
+  brace-expansion@<1.1.21: ^1.1.21
+  brace-expansion@>=2.0.0 <5.0.12: ^5.0.12
+  fast-uri@<3.1.9: ^3.1.9
   js-yaml@>=4.0.0 <4.3.2: ^4.3.2
   nanoid@<3.3.18: ^3.3.18
   postcss@<8.5.23: ^8.5.23
   browserslist@<4.28.7: ^4.28.7
+  serialize-javascript@>=7.1.1 <7.1.2: ^7.1.2
+  source-map-js@<1.2.2: ^1.2.2
