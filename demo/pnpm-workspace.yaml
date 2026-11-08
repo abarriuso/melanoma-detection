@@ -27,3 +27,11 @@ overrides:
   browserslist@<4.28.7: ^4.28.7
   serialize-javascript@>=7.1.1 <7.1.2: ^7.1.2
   source-map-js@<1.2.2: ^1.2.2
+  # glob (GHSA-3g3m-2fjr-6pw4) y minimatch (GHSA-g3hv-75wg-m249) solo
+  # tienen parche en glob 14 / minimatch 11. Lo que piden workbox-build
+  # (glob 11, vía vite-plugin-pwa) y eslint 10 (minimatch 10) no lo recibe,
+  # así que se sube de major. Se comprobó que lint, tests y el build salen
+  # igual, con la misma lista de precache en sw.js. minimatch 3 y 5 no
+  # están afectados y no se tocan.
+  glob@>=9.0.0 <14.0.2: ^14.0.3
+  minimatch@>=7.0.0 <11.0.1: ^11.0.2
