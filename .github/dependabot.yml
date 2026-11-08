@@ -13,6 +13,12 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      # react y react-dom tienen que ir en la misma versión exacta; por
+      # separado, los tests fallan con "Incompatible React versions".
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
     ignore:
       # Vite 7 retiró el subpath "vite/internal" que importa
       # @vitejs/plugin-react 6, así que el par 6+7 no arranca: falla la
